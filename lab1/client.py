@@ -22,11 +22,21 @@ class Client(object):
         self.socket.bind(('', self.port))
 
         self.msg = Queue()
+        self.logger_ip = '224.0.0.1'
+        self.logger_ports = [8000, 8001]
+
+
 
         listener = Process(target=self.listen)
         listener.start()
         self.console()
         listener.terminate()
+
+    def send_log(self):
+        # msg = str(time.time()) + ' '
+        msg = self.name
+        for port in self.logger_ports:
+            self.socket.sendto(bytes(msg, 'utf-8'), (self.logger_ip, port))
 
     def send(self, receiver='', msg=''):
         if receiver == 'new':
@@ -45,6 +55,8 @@ class Client(object):
 
         buff = self.socket.recv(self.MSG_LEN)
         buff = str(buff, 'utf-8')
+
+        self.send_log()
         if self.debug:
             print('DEBUG I\'ve got token: <<<' + buff + '>>>')
         if self.sleep:
