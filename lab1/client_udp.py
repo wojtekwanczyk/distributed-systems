@@ -3,7 +3,7 @@ import socket
 import time
 
 
-class Client(object):
+class ClientUDP(object):
     def __init__(self, config):
         self.name = config[0]
         self.port = int(config[1])

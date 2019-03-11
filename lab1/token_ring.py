@@ -1,5 +1,5 @@
-from lab1.client import Client
-from multiprocessing import Process, Manager
+from lab1.client_udp import ClientUDP
+from lab1.client_tcp import ClientTCP
 
 
 def get_config(config_file):
@@ -11,8 +11,12 @@ def get_config(config_file):
         for c in clients:
             f.write(c + '\n')
     print("You are: " + str(config))
+    config = config.split()
 
-    return Client(config.split())
+    if config[6] == 'tcp':
+        return ClientTCP(config)
+    else:
+        return ClientUDP(config)
 
 
 def release_config(config_file, client):
@@ -28,8 +32,9 @@ def listen(user_input):
     while True:
         content = input()
 
+
 def main():
-    config_name = 'clients'
+    config_name = 'clientsTCP'
     client = get_config(config_name)
 
     release_config(config_name, client)
