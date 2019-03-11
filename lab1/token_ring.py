@@ -1,5 +1,5 @@
-import socket
-import time
+from lab1.client import Client
+from multiprocessing import Process, Manager
 
 
 def get_config(config_file):
@@ -18,42 +18,19 @@ def get_config(config_file):
 def release_config(config_file, client):
     ip, port = client.next_socket
     config = [client.name, str(client.port), ip, str(port), str(client.token), client.protocol]
-    with open(config_file, 'a') as f:
-        f.write(' '.join(config) + '\n')
+    with open(config_file, 'r+') as f:
+        content = f.read()
+        f.seek(0, 0)
+        f.write(' '.join(config) + '\n' + content)
 
 
-class Client(object):
-    def __init__(self, config):
-        self.name = config[0]
-        self.port = int(config[1])
-        self.next_socket = (config[2], int(config[3]))
-        self.token = bool(config[4])
-        self.protocol = config[5]
-        self.MSG_LEN = 2048
-
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.socket.bind(('', self.port))
-
-    def send(self, receiver, msg):
-        msg = receiver + ' ' + msg
-        self.socket.sendto(bytes(msg, 'utf-8'), self.next_socket)
-
-    def receive(self):
-        buff = []
-        while not buff:
-            buff = self.socket.recv(self.MSG_LEN)
-        buff = str(buff, 'utf-8')
-        time.sleep(1)
-        print(buff)
-
-
+def listen(user_input):
+    while True:
+        content = input()
 
 def main():
     config_name = 'clients'
     client = get_config(config_name)
-
-    client.send('aaa', '')
-    client.receive()
 
     release_config(config_name, client)
 
