@@ -30,7 +30,9 @@ public class Main {
 
         byte[] buff = new byte[1024];
         String full_log = "";
-        for(int i=0; i<20 ;i++) {
+        BufferedWriter writer = null;
+        String filename = "log_" + Integer.toString(port )+ ".txt";
+        for(int i=0;  ;i++) {
             DatagramPacket packet = new DatagramPacket(buff, buff.length);
             try {
                 socket.receive(packet);
@@ -46,6 +48,17 @@ public class Main {
             String log = date.toString() + ":\t" + received;
             System.out.println(log);
             full_log = full_log + "\n " + log;
+
+            if(i % 10 == 0){
+                try {
+                    writer = new BufferedWriter(new FileWriter(filename, true));
+                    writer.write(full_log);
+                    writer.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                full_log = "";
+            }
         }
         try {
             socket.leaveGroup(group);
@@ -54,15 +67,9 @@ public class Main {
         }
         socket.close();
 
-        BufferedWriter writer = null;
-        String filename = "log_" + Integer.toString(port )+ ".txt";
-        try {
-            writer = new BufferedWriter(new FileWriter(filename));
-            writer.write(full_log);
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+
+
 
     }
 }

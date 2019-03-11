@@ -13,7 +13,7 @@ def get_config(config_file):
     print("You are: " + str(config))
     config = config.split()
 
-    if config[6] == 'tcp':
+    if config[5] == 'tcp':
         return ClientTCP(config)
     else:
         return ClientUDP(config)
@@ -28,15 +28,9 @@ def release_config(config_file, client):
         f.write(' '.join(config) + '\n' + content)
 
 
-def listen(user_input):
-    while True:
-        content = input()
-
-
 def main():
-    config_name = 'clientsTCP'
+    config_name = 'clients'
     client = get_config(config_name)
-
     release_config(config_name, client)
 
 

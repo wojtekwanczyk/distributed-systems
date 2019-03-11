@@ -1,20 +1,8 @@
 edgar 9000 localhost 9000 True tcp
-edgar 9000 localhost 9000 True tcp
-edgar 9000 localhost 9000 True tcp
-edgar 9000 localhost 9000 True tcp
-edgar 9000 localhost 9000 True tcp
-edgar 9000 localhost 9000 True tcp
-edgar 9000 localhost 9000 True tcp
-edgar 9000 localhost 9000 True tcp
-edgar 9000 localhost 9000 True tcp
-edgar 9000 localhost 9000 True tcp
-edgar 9000 localhost 9000 True tcp
-edgar 9000 localhost 9000 True tcp
 allan 9001 localhost 9000 False tcp
 poe 9002 localhost 9000 False tcp
 fiodor 9003 localhost 9000 False tcp
 dostojewski 9004 localhost 9000 False tcp
-edgar 9000 localhost 9000 True tcp
 
 
 
