@@ -17,7 +17,7 @@ def get_config(config_file):
 
 def release_config(config_file, client):
     ip, port = client.next_socket
-    config = [client.name, str(client.port), ip, str(port), str(client.token), client.protocol]
+    config = [client.name, str(client.port), ip, str(port), client.token, client.protocol]
     with open(config_file, 'r+') as f:
         content = f.read()
         f.seek(0, 0)
