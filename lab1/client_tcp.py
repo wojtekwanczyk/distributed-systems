@@ -1,6 +1,7 @@
 from multiprocessing import Process, Queue, Value
 import socket
 import time
+import random
 
 
 class ClientTCP(object):
@@ -16,8 +17,8 @@ class ClientTCP(object):
         self.receiver = ''
         self.debug = True
         self.sleep = True
-        self.priority = 0
         self.nr = 100
+        self.pri = 0
         if self.token == "True":
             self.nr = 1
 
@@ -185,7 +186,7 @@ class ClientTCP(object):
 
             # send response
             if self.msg.empty():
-                self.send()
+                self.send('', 'cos cos ' + str(random.randint(0, 100) % self.nr + 1) + ' ' + str(self.nr))
             else:
                 self.send(self.msg.get(), self.msg.get())
         elif receiver == 'size':
@@ -208,6 +209,7 @@ class ClientTCP(object):
             buff_list[2] = str(ttl)
             buff = ' '.join(buff_list)
             self.send('', buff)
+            self.pri += 1
 
     def console(self):
         self.receiver = input('Receiver: ')
@@ -220,4 +222,3 @@ class ClientTCP(object):
             elif content:
                 self.msg.put(self.receiver)
                 self.msg.put(content)
-
