@@ -18,7 +18,7 @@ public class Main {
         }
         InetAddress group = null;
         try {
-            group = InetAddress.getByName("224.0.0.1");
+            group = InetAddress.getByName("224.100.0.1");
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }

@@ -1,4 +1,4 @@
-from multiprocessing import Process, Queue
+from multiprocessing import Process, Queue, Value
 import socket
 import time
 
@@ -25,15 +25,12 @@ class ClientUDP(object):
         self.logger_ip = '224.0.0.1'
         self.logger_ports = [8000, 8001]
 
-
-
         listener = Process(target=self.listen)
         listener.start()
         self.console()
         listener.terminate()
 
     def send_log(self):
-        # msg = str(time.time()) + ' '
         msg = self.name
         for port in self.logger_ports:
             self.socket.sendto(bytes(msg, 'utf-8'), (self.logger_ip, port))

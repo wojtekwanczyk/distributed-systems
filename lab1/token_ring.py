@@ -29,7 +29,7 @@ def release_config(config_file, client):
 
 
 def main():
-    config_name = 'clients'
+    config_name = 'clientsTCP'
     client = get_config(config_name)
     release_config(config_name, client)
 
