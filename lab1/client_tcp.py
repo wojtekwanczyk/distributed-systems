@@ -18,7 +18,6 @@ class ClientTCP(object):
         self.debug = True
         self.sleep = True
         self.nr = 100
-        self.pri = 0
         if self.token == "True":
             self.nr = 1
 
