@@ -21,7 +21,7 @@ public class DistributedMap extends ReceiverAdapter implements SimpleStringClass
             channel.setName(name);
             channel.setReceiver(this);
             channel.connect(cluster);
-            //channel.getState(null, 10000);
+            channel.getState(null, 10000);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -63,6 +63,7 @@ public class DistributedMap extends ReceiverAdapter implements SimpleStringClass
         }
     }
 
+    @SuppressWarnings("unchecked")
     public void setState(InputStream input) throws Exception {
         HashMap<String, Integer> receivedMap;
         receivedMap = (HashMap<String, Integer>) Util.objectFromStream(new DataInputStream(input));
@@ -72,7 +73,7 @@ public class DistributedMap extends ReceiverAdapter implements SimpleStringClass
             map.putAll(receivedMap);
         }
 
-        System.out.println("received map state:");
+        System.out.println("*** received map state ***");
         show();
     }
 
@@ -110,6 +111,9 @@ public class DistributedMap extends ReceiverAdapter implements SimpleStringClass
     }
 
     public void show() {
+        if(map.isEmpty()){
+            System.out.println("Map is empty");
+        }
         map.entrySet().forEach(System.out::println);
     }
 }
