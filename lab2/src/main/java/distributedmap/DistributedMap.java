@@ -1,36 +1,15 @@
 package distributedmap;
 
 
-import org.jgroups.JChannel;
-import org.jgroups.Message;
-import org.jgroups.ReceiverAdapter;
-import org.jgroups.View;
+import org.jgroups.*;
+import org.jgroups.util.Util;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.util.HashMap;
 
 public class DistributedMap extends ReceiverAdapter implements SimpleStringClass {
     private JChannel channel;
-
-    @Override
-    public boolean containsKey(String key) {
-        return false;
-    }
-
-    @Override
-    public Integer get(String key) {
-        return null;
-    }
-
-    @Override
-    public void put(String key, Integer value) {
-
-    }
-
-    @Override
-    public Integer remove(String key) {
-        return null;
-    }
+    final private HashMap<String, Integer> map = new HashMap<>();
 
     public void start(String name, String cluster, String properties) {
         try {
@@ -46,30 +25,91 @@ public class DistributedMap extends ReceiverAdapter implements SimpleStringClass
         } catch (Exception e) {
             e.printStackTrace();
         }
-        eventLoop();
+    }
+
+    public void stop() {
         channel.close();
     }
 
-    private void eventLoop() {
-        BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
-        String text = "";
-        while(!text.equals("end")) {
-            try {
-                text = input.readLine();
-                Message msg = new Message(null, text);
-                channel.send(msg);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-    }
-
-    public void viewAccepted(View new_view) {
-        System.out.println("** view: " + new_view);
+    public void viewAccepted(View view) {
+        System.out.println("*** group info ***\n\t" + view);
     }
 
     public void receive(Message msg) {
-        System.out.printf("from %s: %s\n", msg.getSrc(), msg.getObject());
+        String content = msg.getObject().toString();
+        Address source = msg.getSrc();
+        System.out.printf("*** received message ***\n\t %s: %s\n", source, content);
+
+        String[] contentArray = content.split(" ");
+        String action = contentArray[0];
+        String key = contentArray[1];
+
+        if(!source.equals(channel.getAddress())){
+            switch (action) {
+                case "put":
+                    Integer value = Integer.valueOf(contentArray[2]);
+                    map.put(key, value);
+                    break;
+                case "remove":
+                    map.remove(key);
+                    break;
+            }
+        }
+    }
+
+    public void getState(OutputStream output) throws Exception {
+        synchronized(map) {
+            Util.objectToStream(map, new DataOutputStream(output));
+        }
+    }
+
+    public void setState(InputStream input) throws Exception {
+        HashMap<String, Integer> receivedMap;
+        receivedMap = (HashMap<String, Integer>) Util.objectFromStream(new DataInputStream(input));
+
+        synchronized (map) {
+            map.clear();
+            map.putAll(receivedMap);
+        }
+
+        System.out.println("received map state:");
+        show();
+    }
+
+
+    @Override
+    public boolean containsKey(String key) {
+        return map.containsKey(key);
+    }
+
+    @Override
+    public Integer get(String key) {
+        return map.get(key);
+    }
+
+    @Override
+    public void put(String key, Integer value) {
+        try {
+            channel.send(new Message(null, "put" + " " + key + " " + value));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+        map.put(key, value);
+    }
+
+    @Override
+    public Integer remove(String key) {
+        try {
+            channel.send(new Message(null, "remove" + " " + key));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+        return map.remove(key);
+    }
+
+    public void show() {
+        map.entrySet().forEach(System.out::println);
     }
 }
