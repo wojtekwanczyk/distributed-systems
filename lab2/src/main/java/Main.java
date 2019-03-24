@@ -3,13 +3,19 @@ import distributedmap.DistributedMap;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.UnknownHostException;
 
 public class Main {
     public static void main(String[] args) {
-        System.out.println(args[0]);
-        DistributedMap myMap = new DistributedMap();
+        String name = parseName(args);
+        System.out.println(name);
 
-        myMap.start(args[0], "HashMapCluster", "");
+        DistributedMap myMap = new DistributedMap();
+        try {
+            myMap.start(name, "HashMapCluster");
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
         operate(myMap);
         myMap.stop();
     }
@@ -73,11 +79,19 @@ public class Main {
         }
     }
 
-    public static boolean checkInput(String[] array, int len) {
+    private static boolean checkInput(String[] array, int len) {
         if(array.length != len) {
             System.out.println("Wrong input");
             return false;
         }
         return true;
+    }
+
+    private static String parseName(String[] args) {
+        if(args.length == 0){
+            return "noname";
+        } else {
+            return args[0];
+        }
     }
 }

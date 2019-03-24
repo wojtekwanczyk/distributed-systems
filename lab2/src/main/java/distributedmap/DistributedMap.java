@@ -2,37 +2,63 @@ package distributedmap;
 
 
 import org.jgroups.*;
+import org.jgroups.protocols.*;
+import org.jgroups.protocols.pbcast.GMS;
+import org.jgroups.protocols.pbcast.NAKACK2;
+import org.jgroups.protocols.pbcast.STABLE;
+import org.jgroups.protocols.pbcast.STATE_TRANSFER;
+import org.jgroups.stack.ProtocolStack;
 import org.jgroups.util.Util;
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.UnknownHostException;
 import java.util.HashMap;
+import java.util.List;
 
 public class DistributedMap extends ReceiverAdapter implements SimpleStringClass {
     private JChannel channel;
     final private HashMap<String, Integer> map = new HashMap<>();
 
-    public void start(String name, String cluster, String properties) {
+    public void start(String name, String cluster) throws UnknownHostException {
+        channel = new JChannel(false);
+        channel.setName(name);
+        channel.setReceiver(this);
+
+        ProtocolStack stack = new ProtocolStack();
+
+        channel.setProtocolStack(stack);
+        stack.addProtocol(new UDP())
+//        stack.addProtocol(new UDP().setValue("mcast_group_addr",InetAddress.getByName("230.100.200.100")))
+                .addProtocol(new PING())
+                .addProtocol(new MERGE3())
+                .addProtocol(new FD_SOCK())
+                .addProtocol(new FD_ALL().setValue("timeout", 12000).setValue("interval", 3000))
+                .addProtocol(new VERIFY_SUSPECT())
+                .addProtocol(new BARRIER())
+                .addProtocol(new NAKACK2())
+                .addProtocol(new UNICAST3())
+                .addProtocol(new STABLE())
+                .addProtocol(new GMS())
+                .addProtocol(new UFC())
+                .addProtocol(new MFC())
+                .addProtocol(new FRAG2())
+                .addProtocol(new STATE_TRANSFER());
+
         try {
-            if(properties.isEmpty()){
-                channel = new JChannel();
-            } else {
-                channel = new JChannel(properties);
-            }
-            channel.setName(name);
-            channel.setReceiver(this);
+            stack.init();
             channel.connect(cluster);
             channel.getState(null, 10000);
         } catch (Exception e) {
             e.printStackTrace();
         }
+
     }
 
     public void stop() {
         channel.close();
-    }
-
-    public void viewAccepted(View view) {
-        System.out.println("*** group info ***\n\t" + view);
     }
 
     public void receive(Message msg) {
@@ -115,5 +141,43 @@ public class DistributedMap extends ReceiverAdapter implements SimpleStringClass
             System.out.println("Map is empty");
         }
         map.entrySet().forEach(System.out::println);
+    }
+
+    public void viewAccepted(View view) {
+        System.out.println("*** group info ***\n\t" + view);
+
+        if(view instanceof MergeView) {
+            MergeViewHandler handler = new MergeViewHandler(channel, (MergeView)view);
+            handler.start();
+        }
+    }
+
+    private static class MergeViewHandler extends Thread {
+        JChannel channel;
+        MergeView view;
+
+        private MergeViewHandler(JChannel channel, MergeView view) {
+            this.channel = channel;
+            this.view = view;
+        }
+
+        public void run() {
+            List<View> subgroups = view.getSubgroups();
+            View tmp_view = subgroups.get(0); // picks the first
+            Address local_addr = channel.getAddress();
+
+            if (tmp_view.getMembers().contains(local_addr)) {
+                System.out.println("Member of the new primary partition ("
+                        + tmp_view + "), will do nothing");
+            } else {
+                System.out.println("Not member of the new primary partition ("
+                        + tmp_view + "), will re-acquire the state");
+                try {
+                    channel.getState(null, 10000);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
     }
 }
