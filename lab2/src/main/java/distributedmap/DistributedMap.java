@@ -14,6 +14,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.List;
@@ -23,6 +24,7 @@ public class DistributedMap extends ReceiverAdapter implements SimpleStringClass
     final private HashMap<String, Integer> map = new HashMap<>();
 
     public void start(String name, String cluster) throws UnknownHostException {
+        System.setProperty("java.net.preferIPv4Stack", "true");
         channel = new JChannel(false);
         channel.setName(name);
         channel.setReceiver(this);
@@ -30,8 +32,7 @@ public class DistributedMap extends ReceiverAdapter implements SimpleStringClass
         ProtocolStack stack = new ProtocolStack();
 
         channel.setProtocolStack(stack);
-        stack.addProtocol(new UDP())
-//        stack.addProtocol(new UDP().setValue("mcast_group_addr",InetAddress.getByName("230.100.200.100")))
+        stack.addProtocol(new UDP().setValue("mcast_group_addr", InetAddress.getByName("230.100.200.100")))
                 .addProtocol(new PING())
                 .addProtocol(new MERGE3())
                 .addProtocol(new FD_SOCK())
