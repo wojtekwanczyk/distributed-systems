@@ -1,17 +1,28 @@
 import pika
 
 
+class Doctor:
+    def __init__(self, queue_name):
+        self.queue_name = queue_name
+        self.connection = pika.BlockingConnection(
+            pika.ConnectionParameters(host='localhost'))
+        self.channel = self.connection.channel()
+        self.channel.queue_declare(queue=queue_name)
+
+    def go_home(self):
+        self.connection.close()
+
+    def order(self, examination):
+        self.channel.basic_publish(exchange='', routing_key=self.queue_name,
+                                   body=examination)
+        print('Ordered examination: ' + examination)
+
+
 def main():
-    connection = pika.BlockingConnection(
-        pika.ConnectionParameters(host='localhost'))
-    channel = connection.channel()
 
-    channel.queue_declare(queue='hello')
-
-    channel.basic_publish(exchange='', routing_key='hello', body='Hello World!')
-    print(" [x] Sent 'Hello World!'")
-    connection.close()
+    doctor = Doctor('hospital')
+    doctor.order('test exam')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
