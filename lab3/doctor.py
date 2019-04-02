@@ -1,3 +1,4 @@
+import random
 import uuid
 import time
 from threading import Thread
@@ -9,19 +10,14 @@ class Doctor:
     def __init__(self, queue_name):
         self.queue_name = queue_name
         self.responses = dict()
+        self.response_queue = 'res.doc'
 
         self.connection = pika.BlockingConnection(
             pika.ConnectionParameters(host='localhost'))
         self.channel = self.connection.channel()
 
-        self.channel.exchange_declare(exchange='logs',
-                                      exchange_type='topic')
-
-        result = self.channel.queue_declare('', exclusive=True)
-        self.callback_queue = result.method.queue
-
         self.channel.basic_consume(
-            queue=self.callback_queue,
+            queue=self.response_queue,
             on_message_callback=self.on_response,
             auto_ack=True)
 
@@ -34,10 +30,10 @@ class Doctor:
 
         key = f'tec.{examination}'
         msg = f'{examination} {name}'
-        self.channel.basic_publish(exchange='logs',
+        self.channel.basic_publish(exchange='examinations',
                                    routing_key=key,
                                    properties=pika.BasicProperties(
-                                       reply_to=self.callback_queue,
+                                       reply_to=self.response_queue,
                                        correlation_id=corr_id,
                                    ),
                                    body=msg)
@@ -58,9 +54,9 @@ class Doctor:
 
 
 def main():
-
+    examinations = ['knee', 'hip', 'elbow']
     doctor = Doctor('hospital')
-    doctor.order('knee', names.get_first_name())
+    doctor.order(examinations[random.randint(0, 2)], names.get_first_name())
 
 
 if __name__ == '__main__':
