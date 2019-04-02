@@ -21,6 +21,14 @@ class Doctor:
             on_message_callback=self.on_response,
             auto_ack=True)
 
+        # info queue
+        result = self.channel.queue_declare('', exclusive=True)
+        info_queue = result.method.queue
+        self.channel.queue_bind(exchange='info',
+                                queue=info_queue)
+        self.channel.basic_consume(
+            queue=info_queue, on_message_callback=self.info_callback, auto_ack=True)
+
     def go_home(self):
         self.connection.close()
 
@@ -52,11 +60,18 @@ class Doctor:
         if corr_id in self.responses.keys():
             self.responses[corr_id] = body.decode()
 
+    @staticmethod
+    def info_callback(ch, method, props, body):
+        print(f'ADMIN INFO: {body.decode()}')
+
 
 def main():
     examinations = ['knee', 'hip', 'elbow']
     doctor = Doctor('hospital')
-    doctor.order(examinations[random.randint(0, 2)], names.get_first_name())
+    # doctor.order(examinations[random.randint(0, 2)], names.get_first_name())
+    for i in range(2):
+        doctor.order('knee', names.get_first_name())
+    # problem with threading
 
 
 if __name__ == '__main__':

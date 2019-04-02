@@ -19,9 +19,10 @@ class Admin:
     def declare_exchange(self):
         self.channel.exchange_declare(exchange='examinations', exchange_type='topic')
         self.channel.exchange_declare(exchange='responses', exchange_type='topic')
+        self.channel.exchange_declare(exchange='info', exchange_type='fanout')
 
     def declare_queues(self):
-        for queue in self.tec_queues + self.res_queues:
+        for queue in self.tec_queues + self.res_queues + ['info_q']:
             self.channel.queue_declare(queue=queue, durable=True)
 
     def bind_queues(self):
@@ -53,6 +54,12 @@ class Admin:
         print('Admin is working')
         print('...')
 
+    def info(self, msg):
+        self.channel.basic_publish(exchange='info',
+                                   routing_key='',
+                                   body=msg)
+        print(f"Info sent: {msg}")
+
 
 def main():
     exam_queues = ['knee', 'hip', 'elbow']
@@ -65,8 +72,9 @@ def main():
 
     admin.start_consuming()
 
-    print('ok')
-    # todo admin msg
+    while True:
+        cmd = input()
+        admin.info(cmd)
 
 
 if __name__ == '__main__':
