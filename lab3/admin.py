@@ -30,12 +30,11 @@ class Admin:
     def examine_callback(ch, method, properties, body):
         msg = body.decode()
         print(f'Received <<{msg}>>')
-        #ch.basic_ack(delivery_tag=method.delivery_tag)
 
 
 def main():
     admin = Admin()
-    print('ok')
+    # todo admin msg
 
 
 if __name__ == '__main__':

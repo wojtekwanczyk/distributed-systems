@@ -35,11 +35,21 @@ class Technician:
         self.channel.start_consuming()
 
     @staticmethod
-    def examine_callback(ch, method, properties, body):
+    def examine_callback(ch, method, props, body):
         msg = body.decode()
+        examination = msg.split()[0]
+        name = msg.split()[1]
+
         print(f'Received <<{msg}>> - start')
-        time.sleep(10)
+        time.sleep(2)
         print('Processed')
+        resp = f'{name} {examination} done'
+
+        ch.basic_publish(exchange='',
+                         routing_key=props.reply_to,
+                         properties=pika.BasicProperties(
+                             correlation_id=props.correlation_id),
+                         body=resp)
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
 
