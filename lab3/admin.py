@@ -31,6 +31,7 @@ class Admin:
                                     queue=queue,
                                     routing_key=queue)
         for queue in self.res_queues:
+            print(queue)
             self.channel.queue_bind(exchange='responses',
                                     queue=queue,
                                     routing_key=queue)

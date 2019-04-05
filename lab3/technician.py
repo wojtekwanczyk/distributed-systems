@@ -41,7 +41,7 @@ class Technician:
         name = msg.split()[1]
 
         print(f'Received <<{msg}>> - start')
-        time.sleep(5)
+        time.sleep(2)
         print('Processed')
         resp = f'{name} {examination} done'
 

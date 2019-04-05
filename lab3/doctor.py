@@ -1,7 +1,8 @@
+import asyncio
 import random
 import uuid
 import time
-from threading import Thread
+import threading
 import pika
 import names
 
@@ -11,6 +12,8 @@ class Doctor:
         self.queue_name = queue_name
         self.responses = dict()
         self.response_queue = 'res.doc'
+        self.waiting = 0
+        self.lock = threading.Lock()
 
         self.connection = pika.BlockingConnection(
             pika.ConnectionParameters(host='localhost'))
@@ -34,10 +37,14 @@ class Doctor:
 
     def order(self, examination, name):
         corr_id = str(uuid.uuid4())
+
+        self.lock.acquire()
         self.responses[corr_id] = None
+        self.lock.release()
 
         key = f'tec.{examination}'
         msg = f'{examination} {name}'
+        print('Ordering..')
         self.channel.basic_publish(exchange='examinations',
                                    routing_key=key,
                                    properties=pika.BasicProperties(
@@ -47,31 +54,53 @@ class Doctor:
                                    body=msg)
         print(f'Ordered examination: {examination} {name}')
 
-        thread = Thread(target=self.wait_for_response, args=(corr_id,))
-        thread.start()
+        self.waiting += 1
+        if self.waiting == 1:
+            thread = threading.Thread(target=self.wait_for_response)
+            thread.start()
 
-    def wait_for_response(self, corr_id):
-        while self.responses[corr_id] is None:
+    def wait_for_response(self):
+        while self.waiting > 0:
+            print(self.waiting)
+            #self.lock.acquire()
+            # print('wait lock')
             self.connection.process_data_events()
-        print(f'Received response: {self.responses[corr_id]}')
+            for key in self.responses:
+                if self.responses[key]:
+                    print(self.responses[key])
+                    self.waiting -= 1
+
+            # print('wait released')
+            #self.lock.release()
+            time.sleep(1)
 
     def on_response(self, ch, method, props, body):
         corr_id = props.correlation_id
+        self.lock.acquire()
+        print('resp lock')
         if corr_id in self.responses.keys():
             self.responses[corr_id] = body.decode()
+        print('resp release')
+        self.lock.release()
 
     @staticmethod
     def info_callback(ch, method, props, body):
         print(f'ADMIN INFO: {body.decode()}')
+
+    def few_orders(self, count):
+        for i in range(count):
+            self.order('knee', names.get_first_name())
 
 
 def main():
     examinations = ['knee', 'hip', 'elbow']
     doctor = Doctor('hospital')
     # doctor.order(examinations[random.randint(0, 2)], names.get_first_name())
-    for i in range(2):
-        doctor.order('knee', names.get_first_name())
-    # problem with threading
+    doctor.few_orders(2)
+    print('ok')
+    time.sleep(10)
+
+    # almost solved threading problem!!!
 
 
 if __name__ == '__main__':
