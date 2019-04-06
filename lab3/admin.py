@@ -9,7 +9,6 @@ class Admin:
             pika.ConnectionParameters(host='localhost'))
         self.channel = self.connection.channel()
         self.tec_queues = list(map(lambda x: 'tec.' + x, queues + ['adm']))
-        self.res_queues = list(map(lambda x: 'res.' + x, ['doc', 'adm']))
 
     @staticmethod
     def examination_callback(ch, method, properties, body):
@@ -18,11 +17,10 @@ class Admin:
 
     def declare_exchange(self):
         self.channel.exchange_declare(exchange='examinations', exchange_type='topic')
-        self.channel.exchange_declare(exchange='responses', exchange_type='topic')
         self.channel.exchange_declare(exchange='info', exchange_type='fanout')
 
     def declare_queues(self):
-        for queue in self.tec_queues + self.res_queues + ['info_q']:
+        for queue in self.tec_queues:
             self.channel.queue_declare(queue=queue, durable=True)
 
     def bind_queues(self):
@@ -30,16 +28,12 @@ class Admin:
             self.channel.queue_bind(exchange='examinations',
                                     queue=queue,
                                     routing_key=queue)
-        for queue in self.res_queues:
-            print(queue)
-            self.channel.queue_bind(exchange='responses',
-                                    queue=queue,
-                                    routing_key=queue)
+
         # admin bindings
         self.channel.queue_bind(exchange='examinations',
                                 queue='tec.adm',
                                 routing_key='tec.*')
-        self.channel.queue_bind(exchange='responses',
+        self.channel.queue_bind(exchange='info',
                                 queue='res.adm',
                                 routing_key='res.*')
 

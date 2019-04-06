@@ -45,7 +45,7 @@ class Technician:
         print('Processed')
         resp = f'{name} {examination} done'
 
-        ch.basic_publish(exchange='responses',
+        ch.basic_publish(exchange='info',
                          routing_key=props.reply_to,
                          properties=pika.BasicProperties(
                              correlation_id=props.correlation_id),
@@ -54,7 +54,9 @@ class Technician:
 
     @staticmethod
     def info_callback(ch, method, props, body):
-        print(f'ADMIN INFO: {body.decode()}')
+        msg = body.decode()
+        if 'done' not in msg:
+            print(f'ADMIN INFO: {msg}')
 
 
 def wake_technician(args):
