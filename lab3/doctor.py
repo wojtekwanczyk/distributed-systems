@@ -1,4 +1,5 @@
 import asyncio
+import multiprocessing
 import random
 import uuid
 import time
@@ -39,7 +40,9 @@ class Doctor:
         corr_id = str(uuid.uuid4())
 
         self.lock.acquire()
+        print('order lock')
         self.responses[corr_id] = None
+        print('order release')
         self.lock.release()
 
         key = f'tec.{examination}'
@@ -61,27 +64,29 @@ class Doctor:
 
     def wait_for_response(self):
         while self.waiting > 0:
-            print(self.waiting)
-            #self.lock.acquire()
-            # print('wait lock')
+            # print(self.waiting)
+            self.lock.acquire()
+            print('wait lock')
             self.connection.process_data_events()
-            for key in self.responses:
-                if self.responses[key]:
-                    print(self.responses[key])
-                    self.waiting -= 1
 
-            # print('wait released')
-            #self.lock.release()
-            time.sleep(1)
+            resp_copy = self.responses.copy()
+            for key in resp_copy:
+                if resp_copy[key]:
+                    print(resp_copy[key])
+                    del self.responses[key]
+
+            print('wait released')
+            self.lock.release()
+            time.sleep(0.3)
 
     def on_response(self, ch, method, props, body):
         corr_id = props.correlation_id
-        self.lock.acquire()
-        print('resp lock')
+        print('response')
         if corr_id in self.responses.keys():
             self.responses[corr_id] = body.decode()
-        print('resp release')
-        self.lock.release()
+            print(self.waiting)
+            self.waiting -= 1
+            print(self.waiting)
 
     @staticmethod
     def info_callback(ch, method, props, body):
@@ -96,11 +101,12 @@ def main():
     examinations = ['knee', 'hip', 'elbow']
     doctor = Doctor('hospital')
     # doctor.order(examinations[random.randint(0, 2)], names.get_first_name())
-    doctor.few_orders(2)
+    doctor.few_orders(10)
     print('ok')
-    time.sleep(10)
+    #time.sleep(10)
 
     # almost solved threading problem!!!
+    # not yet, every doctor has to have his own queue for responses :(
 
 
 if __name__ == '__main__':
