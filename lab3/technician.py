@@ -22,13 +22,13 @@ class Technician:
                                        on_message_callback=self.examine_callback,
                                        auto_ack=False)
 
-        # info queue
+        # own queue
         result = self.channel.queue_declare('', exclusive=True)
-        info_queue = result.method.queue
-        self.channel.queue_bind(exchange='info',
-                                queue=info_queue)
+        own_queue = result.method.queue
+        self.channel.queue_bind(exchange='whole_staff',
+                                queue=own_queue)
         self.channel.basic_consume(
-            queue=info_queue, on_message_callback=self.info_callback, auto_ack=True)
+            queue=own_queue, on_message_callback=self.message_callback, auto_ack=True)
 
         print('I\'m ready for examinations! Accepted: ' + ' and '.join(self.examinations))
         print('...')
@@ -45,7 +45,7 @@ class Technician:
         print('Processed')
         resp = f'{name} {examination} done'
 
-        ch.basic_publish(exchange='info',
+        ch.basic_publish(exchange='whole_staff',
                          routing_key=props.reply_to,
                          properties=pika.BasicProperties(
                              correlation_id=props.correlation_id),
@@ -53,7 +53,7 @@ class Technician:
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
     @staticmethod
-    def info_callback(ch, method, props, body):
+    def message_callback(ch, method, props, body):
         msg = body.decode()
         if 'done' not in msg:
             print(f'ADMIN INFO: {msg}')

@@ -7,30 +7,30 @@ import names
 
 
 class Doctor:
-    def __init__(self, queue_name):
-        self.queue_name = queue_name
+    def __init__(self):
         self.responses = dict()
         self.response_queue = 'res.doc'
         self.waiting = 0
         self.lock = threading.Lock()
+        self.examinations = ['knee', 'hip', 'elbow']
 
         self.connection = pika.BlockingConnection(
             pika.ConnectionParameters(host='localhost'))
         self.channel = self.connection.channel()
 
-        # info queue
+        # own queue
         result = self.channel.queue_declare('', exclusive=True)
-        info_queue = result.method.queue
-        self.channel.queue_bind(exchange='info',
-                                queue=info_queue)
+        own_queue = result.method.queue
+        self.channel.queue_bind(exchange='whole_staff',
+                                queue=own_queue)
 
         # response queue
-        self.channel.queue_bind(exchange='info',
+        self.channel.queue_bind(exchange='whole_staff',
                                 queue=self.response_queue)
         # consume own queue
         self.channel.basic_consume(
-            queue=info_queue,
-            on_message_callback=self.info_callback,
+            queue=own_queue,
+            on_message_callback=self.message_callback,
             auto_ack=True)
 
     def go_home(self):
@@ -74,7 +74,7 @@ class Doctor:
             self.lock.release()
             time.sleep(0.3)
 
-    def info_callback(self, ch, method, props, body):
+    def message_callback(self, ch, method, props, body):
         msg = body.decode()
         if 'done' in msg:
             corr_id = props.correlation_id
@@ -86,13 +86,12 @@ class Doctor:
 
     def few_orders(self, count):
         for i in range(count):
-            self.order('knee', names.get_first_name())
+            self.order(self.examinations[random.randint(0, 2)], names.get_first_name())
+            # self.order('knee', names.get_first_name())
 
 
 def main():
-    examinations = ['knee', 'hip', 'elbow']
-    doctor = Doctor('hospital')
-    # doctor.order(examinations[random.randint(0, 2)], names.get_first_name())
+    doctor = Doctor()
     doctor.few_orders(5)
 
 

@@ -11,13 +11,13 @@ class Admin:
         self.tec_queues = list(map(lambda x: 'tec.' + x, queues + ['adm']))
 
     @staticmethod
-    def examination_callback(ch, method, properties, body):
+    def message_callback(ch, method, properties, body):
         msg = body.decode()
         print(f'Received <<{msg}>>')
 
     def declare_exchange(self):
         self.channel.exchange_declare(exchange='examinations', exchange_type='topic')
-        self.channel.exchange_declare(exchange='info', exchange_type='fanout')
+        self.channel.exchange_declare(exchange='whole_staff', exchange_type='fanout')
 
     def declare_queues(self):
         for queue in self.tec_queues:
@@ -33,16 +33,15 @@ class Admin:
         self.channel.queue_bind(exchange='examinations',
                                 queue='tec.adm',
                                 routing_key='tec.*')
-        self.channel.queue_bind(exchange='info',
-                                queue='res.adm',
-                                routing_key='res.*')
+        self.channel.queue_bind(exchange='whole_staff',
+                                queue='res.adm')
 
     def start_consuming(self):
         self.channel.basic_consume(queue='tec.adm',
-                                   on_message_callback=self.examination_callback,
+                                   on_message_callback=self.message_callback,
                                    auto_ack=True)
         self.channel.basic_consume(queue='res.adm',
-                                   on_message_callback=self.examination_callback,
+                                   on_message_callback=self.message_callback,
                                    auto_ack=True)
         thread = Thread(target=self.channel.start_consuming)
         thread.start()
@@ -50,7 +49,7 @@ class Admin:
         print('...')
 
     def info(self, msg):
-        self.channel.basic_publish(exchange='info',
+        self.channel.basic_publish(exchange='whole_staff',
                                    routing_key='',
                                    body=msg)
         print(f"Info sent: {msg}")
