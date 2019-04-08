@@ -1,6 +1,7 @@
 import sys
 import pika
 import time
+import random
 
 
 '''
@@ -41,7 +42,7 @@ class Technician:
         name = msg.split()[1]
 
         print(f'Received <<{msg}>> - start')
-        time.sleep(2)
+        time.sleep(random.randint(0, 10))
         print('Processed')
         resp = f'{name} {examination} done'
 
@@ -59,17 +60,17 @@ class Technician:
             print(f'ADMIN INFO: {msg}')
 
 
-def wake_technician(args):
-
+def parse_examinations(args):
     examinations = []
     for i in range(1, len(args)):
         examinations.append(args[i])
 
-    return Technician(examinations)
+    return examinations
 
 
 def main():
-    tech = wake_technician(sys.argv)
+    examinations = parse_examinations(sys.argv)
+    tech = Technician(examinations)
 
 
 if __name__ == '__main__':

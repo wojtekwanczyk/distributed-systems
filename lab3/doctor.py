@@ -12,7 +12,7 @@ class Doctor:
         self.response_queue = 'res.doc'
         self.waiting = 0
         self.lock = threading.Lock()
-        self.examinations = ['knee', 'hip', 'elbow']
+        self.examinations = []
 
         self.connection = pika.BlockingConnection(
             pika.ConnectionParameters(host='localhost'))
@@ -87,13 +87,23 @@ class Doctor:
     def few_orders(self, count):
         for i in range(count):
             self.order(self.examinations[random.randint(0, 2)], names.get_first_name())
+            seconds = random.randint(0, 5)
+            print(f'Waiting for {seconds} seconds')
+            time.sleep(seconds)
             # self.order('knee', names.get_first_name())
+
+    def set_examinations(self, examinations):
+        self.examinations = examinations
 
 
 def main():
+    examinations = ['knee', 'hip', 'elbow']
+
     doctor = Doctor()
+    doctor.set_examinations(examinations)
     doctor.few_orders(5)
 
+    time.sleep(30)
 
 if __name__ == '__main__':
     main()
