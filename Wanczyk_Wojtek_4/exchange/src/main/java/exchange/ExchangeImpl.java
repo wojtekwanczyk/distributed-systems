@@ -6,10 +6,13 @@ import sr.ExchangeClass.Currency;
 import sr.ExchangeClass.ExchangeStream;
 import sr.ExchangeGrpc.ExchangeImplBase;
 
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 import io.grpc.stub.StreamObserver;
+
+import static java.lang.Math.abs;
 
 
 public class ExchangeImpl extends ExchangeImplBase {
@@ -17,12 +20,19 @@ public class ExchangeImpl extends ExchangeImplBase {
     private HashMap<Currency, Double> rates;
     private Random rand;
 
+    private double cut(double a){
+        int temp = (int)(a*100.0);
+        double rate = ((double)temp)/100.0;
+        return abs(rate);
+    }
+
 
     ExchangeImpl(){
         rates = new HashMap<>();
         rand = new Random();
         for(Currency currency : Currency.values()){
-            double rate = rand.nextDouble() * 5 + 0.01; // double from 0.01 to 5.01
+            double rate = rand.nextDouble() * 4.5 + 0.5; // double from 0.5 to 5.01
+            rate = cut(rate);
             rates.put(currency, rate);
         }
     }
@@ -33,7 +43,7 @@ public class ExchangeImpl extends ExchangeImplBase {
         Currency mainCurrency = request.getMainCurrency();
         List<Currency> extraCurrencyList = request.getExtraCurrencyList();
         extraCurrencyList.remove(mainCurrency);
-        int waitTime = 1000;
+        int waitTime = 4000;
 
 
         while(true) {
@@ -53,7 +63,8 @@ public class ExchangeImpl extends ExchangeImplBase {
             try {
                 for(Currency currency : rates.keySet()){
                     double rate = rates.get(currency);
-                    rate += rand.nextDouble() / 5 - 0.2; // delta (-0.2, 0.2)
+                    rate += rand.nextDouble() / 5 - 0.1; // delta (-0.1, 0.1)
+                    rate = cut(rate);
                     rates.put(currency, rate);
                 }
                 Thread.sleep(waitTime);
