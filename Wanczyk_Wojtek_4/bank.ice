@@ -1,9 +1,5 @@
 module Bank {
 
-    struct UID {
-        long value;
-    }
-
     enum AccountType {standard, premium};
     enum Currency {PLN, EUR, USD, GBP};
 
@@ -18,11 +14,15 @@ module Bank {
         short days;
     }
 
-    exception NotPremiumAccountException {
+    exception InvalidAccountException {
         string reason;
     }
 
     exception InvalidCredentialsException {
+        string reason;
+    }
+
+    exception InvalidCurrencyException {
         string reason;
     }
 
@@ -34,7 +34,7 @@ module Bank {
     interface Account {
         AccountType getAccountType();
         double getAccountBalance();
-        Credit applyForCredit(Currency currency, double amount, Term term) throws NotPremiumAccountException;
+        Credit applyForCredit(Currency currency, double amount, Term term) throws InvalidAccountException, InvalidCurrencyException;
     }
 
     interface StandardAccount extends Account {}
@@ -42,7 +42,7 @@ module Bank {
     interface PremiumAccount extends Account {}
 
     interface AccountFactory {
-        AccountInfo createAccount(UID uid, double balance, double income);
-        Account* getAccount(UID uid) throws InvalidCredentialsException;
+        AccountInfo createAccount(long uid, double balance, double income);
+        Account* accessAccount(long uid) throws InvalidCredentialsException;
     }
 }
