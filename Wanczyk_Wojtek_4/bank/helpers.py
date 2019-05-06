@@ -1,6 +1,6 @@
 import Ice
 Ice.loadSlice("../bank.ice")
-import Bank
+from Bank import *
 
 currency_name = [
     "PLN",
@@ -9,14 +9,17 @@ currency_name = [
     "GBP"
 ]
 
+currency_ice = {
+        'PLN': Currency.PLN,
+        'GBP': Currency.GBP,
+        'USD': Currency.USD,
+        'EUR': Currency.EUR
+}
 
-class InvalidAccountExceptionI(Bank.InvalidAccountException):
+
+class InvalidCredentialsExceptionI(InvalidCredentialsException):
     pass
 
 
-class InvalidCredentialsExceptionI(Bank.InvalidCredentialsException):
-    pass
-
-
-class InvalidCurrencyExceptionI(Bank.InvalidCurrencyException):
+class InvalidCurrencyExceptionI(InvalidCurrencyException):
     pass

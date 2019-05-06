@@ -14,10 +14,12 @@ from helpers import *
 
 
 class AccountI(Account):
-    def __init__(self, account_type, UID, balance, income, password):
+    def __init__(self, name, surname, account_type, UID, income, password):
+        self.name = name
+        self.surname = surname
         self.accountType = account_type
         self.id = UID
-        self.balance = balance
+        self.balance = 0
         self.income = income
         self.password = password
 
@@ -30,14 +32,15 @@ class AccountI(Account):
 
 class StandardAccountI(AccountI, StandardAccount):
     def applyForCredit(self, currency, amount, term, current):
-        raise InvalidAccountExceptionI
+        raise NotImplemented
 
 
-class PremiumAccountI(AccountI, StandardAccount):
+class PremiumAccountI(AccountI, PremiumAccount):
     def applyForCredit(self, currency, amount, term, current):
-        if currency not in bank_currencies:
+        if currency not in bank_currencies_ice:
             raise InvalidCurrencyExceptionI
         main_cost = amount * rate[currency]
+        self.balance += main_cost
         print(f'Credit on amount {main_cost} accepted')
         return Credit(main_cost, amount)
 
@@ -47,20 +50,37 @@ class AccountFactoryI(AccountFactory):
         self.accounts = {}
 
     def gen_password(self):
-        return ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+        # return ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+        return 'admin'
 
-    def createAccount(self, uid, balance, income, current):
+    def createAccount(self, name, surname, uid, income, current):
         password = self.gen_password()
 
-        if income > 110901:
+        if income > 911:
             type = AccountType.premium
-            account = PremiumAccountI(type, uid, balance, income, password)
+            account = PremiumAccountI(name, surname, type, uid, income, password)
         else:
             type = AccountType.standard
-            account = StandardAccountI(type, uid, balance, income, password)
+            account = StandardAccountI(name, surname, type, uid, income, password)
 
-        print(f'Created Account {type}')
+        login = str(uid) + '_' + password
+        account_id = str(uid) + '_' + str(type)
+        self.accounts[login] = account_id
+
+        current.adapter.add(account, Ice.stringToIdentity(account_id))
+        print(f'Created account {account_id}')
+
         return AccountInfo(type, password)
+
+    def accessAccount(self, uid, current):
+        login = str(uid) + '_' + current.ctx['password']
+        try:
+            account_id = self.accounts[login]
+            account_proxy = AccountPrx.checkedCast(current.adapter.createProxy(Ice.stringToIdentity(account_id)))
+        except Exception:
+            raise InvalidCredentialsExceptionI
+        print(f'{account_id} has obtained access')
+        return account_proxy
 
 
 def subscribeForExchange():
@@ -71,7 +91,7 @@ def subscribeForExchange():
 
     try:
         for res in stub.subscribeForExchange(req):
-            rate[currency_name[res.currency]] = res.ExchangeRate
+            rate[currency_ice[currency_name[res.currency]]] = res.ExchangeRate
             print(rate)
     except Exception as e:
         print(e)
@@ -96,5 +116,8 @@ def main():
 if __name__ == '__main__':
     main_currency = sys.argv[1]
     bank_currencies = sys.argv[2:]
+    bank_currencies_ice = []
+    for c in bank_currencies:
+        bank_currencies_ice.append(currency_ice[c])
     rate = {}
     main()

@@ -14,10 +14,6 @@ module Bank {
         short days;
     }
 
-    exception InvalidAccountException {
-        string reason;
-    }
-
     exception InvalidCredentialsException {
         string reason;
     }
@@ -34,7 +30,7 @@ module Bank {
     interface Account {
         AccountType getAccountType();
         double getAccountBalance();
-        Credit applyForCredit(Currency currency, double amount, Term term) throws InvalidAccountException, InvalidCurrencyException;
+        Credit applyForCredit(Currency currency, double amount, Term term) throws InvalidCurrencyException;
     }
 
     interface StandardAccount extends Account {}
@@ -42,7 +38,7 @@ module Bank {
     interface PremiumAccount extends Account {}
 
     interface AccountFactory {
-        AccountInfo createAccount(long uid, double balance, double income);
+        AccountInfo createAccount(string name, string surname, long uid, double income);
         Account* accessAccount(long uid) throws InvalidCredentialsException;
     }
 }
