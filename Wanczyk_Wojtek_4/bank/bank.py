@@ -1,7 +1,3 @@
-import random
-import string
-import time
-
 import grpc
 from gen import exchange_pb2_grpc
 from gen import exchange_pb2
@@ -14,7 +10,7 @@ from helpers import *
 
 
 class AccountI(Account):
-    def __init__(self, name, surname, account_type, UID, income, password):
+    def __init__(self, name, surname, account_type, UID, income, password, account_id):
         self.name = name
         self.surname = surname
         self.accountType = account_type
@@ -22,11 +18,14 @@ class AccountI(Account):
         self.balance = 0
         self.income = income
         self.password = password
+        self.account_id = account_id
 
     def getAccountType(self, current):
+        print(f'{self.account_id} inquired for account type')
         return self.accountType
 
     def getAccountBalance(self, current):
+        print(f'{self.account_id} inquired for account balance')
         return self.balance
 
 
@@ -41,7 +40,7 @@ class PremiumAccountI(AccountI, PremiumAccount):
             raise InvalidCurrencyExceptionI
         main_cost = amount * rate[currency]
         self.balance += main_cost
-        print(f'Credit on amount {main_cost} accepted')
+        print(f'{self.account_id} Credit on amount {main_cost} accepted')
         return Credit(main_cost, amount)
 
 
@@ -55,18 +54,17 @@ class AccountFactoryI(AccountFactory):
 
     def createAccount(self, name, surname, uid, income, current):
         password = self.gen_password()
-
+        login = str(uid) + '_' + password
         if income > 911:
             type = AccountType.premium
-            account = PremiumAccountI(name, surname, type, uid, income, password)
+            account_id = str(uid) + '_' + str(type)
+            account = PremiumAccountI(name, surname, type, uid, income, password, account_id)
         else:
             type = AccountType.standard
-            account = StandardAccountI(name, surname, type, uid, income, password)
+            account_id = str(uid) + '_' + str(type)
+            account = StandardAccountI(name, surname, type, uid, income, password, account_id)
 
-        login = str(uid) + '_' + password
-        account_id = str(uid) + '_' + str(type)
         self.accounts[login] = account_id
-
         current.adapter.add(account, Ice.stringToIdentity(account_id))
         print(f'Created account {account_id}')
 
@@ -99,12 +97,13 @@ def subscribeForExchange():
 
 def manage_accounts():
     with Ice.initialize(sys.argv) as communicator:
-        adapter = communicator.createObjectAdapterWithEndpoints("AccountFactoryAdapter", "default -p 10000")
+        adapter = communicator.createObjectAdapterWithEndpoints("AccountFactoryAdapter", "default -p " + port)
         factory = AccountFactoryI()
         adapter.add(factory, communicator.stringToIdentity("AccountFactory"))
         adapter.activate()
         print("Bank is working")
         communicator.waitForShutdown()
+
 
 def main():
     exchange_thread = threading.Thread(target=subscribeForExchange)
@@ -114,8 +113,9 @@ def main():
 
 
 if __name__ == '__main__':
-    main_currency = sys.argv[1]
-    bank_currencies = sys.argv[2:]
+    port = sys.argv[1]
+    main_currency = sys.argv[2]
+    bank_currencies = sys.argv[3:]
     bank_currencies_ice = []
     for c in bank_currencies:
         bank_currencies_ice.append(currency_ice[c])

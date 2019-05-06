@@ -61,13 +61,13 @@ public class ExchangeImpl extends ExchangeImplBase {
 
             // change values and wait
             try {
+                Thread.sleep(waitTime);
                 for(Currency currency : rates.keySet()){
                     double rate = rates.get(currency);
                     rate += rand.nextDouble() / 5 - 0.05; // delta (-0.05, 0.15)
                     rate = cut(rate);
                     rates.put(currency, rate);
                 }
-                Thread.sleep(waitTime);
             } catch (Exception e) {
                 e.printStackTrace();
             }

@@ -5,7 +5,6 @@ from Bank import *
 from helpers import *
 
 
-
 def authentication(bank, args):
     while len(args) != 2:
         args = input('Need authentication. Format: uid password\n').split()
@@ -14,15 +13,19 @@ def authentication(bank, args):
 
 
 def main():
+    port = sys.argv[1]
     with Ice.initialize(sys.argv) as communicator:
-        base = communicator.stringToProxy("AccountFactory:default -p 10000")
+        base = communicator.stringToProxy("AccountFactory:default -p " + port)
         bank = AccountFactoryPrx.checkedCast(base)
         if not bank:
             print('Invalid proxy')
             sys.exit(1)
 
         while True:
-            commands = input('Write command:\n').split()
+            commands = input('Write command:\n')
+            if not commands:
+                continue
+            commands = commands.split()
             command = commands[0]
             args = []
 
@@ -96,8 +99,6 @@ def main():
                 except Exception as e:
                     print(e)
                 continue
-
-
 
 
 if __name__ == '__main__':
