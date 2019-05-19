@@ -1,12 +1,10 @@
 package exchange;
 
-import sr.ExchangeClass;
 import sr.ExchangeClass.ExchangeRequest;
 import sr.ExchangeClass.Currency;
 import sr.ExchangeClass.ExchangeStream;
 import sr.ExchangeGrpc.ExchangeImplBase;
 
-import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;

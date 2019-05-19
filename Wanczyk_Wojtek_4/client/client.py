@@ -62,8 +62,7 @@ def main():
                     print(f'Credit accepted.\nMain currency value: {credit.mainCurrency}\n'
                           f'{args[0]} value: {credit.foreignCurrency}')
                 except Exception as e:
-                    print(e)
-                    print("Wrong format given or invalid currency.")
+                    print(f"Wrong format given or invalid currency. {e}")
                 continue
             if command == 't':
                 print('Account type')
