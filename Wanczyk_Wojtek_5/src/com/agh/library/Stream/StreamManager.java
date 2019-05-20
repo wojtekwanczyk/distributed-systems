@@ -1,19 +1,20 @@
-package com.agh.library;
+package com.agh.library.Stream;
 
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-import com.agh.helpers.Title;
-import com.agh.helpers.TitleActor;
+import com.agh.helpers.titles.Title;
+import com.agh.helpers.titles.TitleActor;
+import com.agh.library.Find.FindSupervisor;
 
-public class FindManager extends AbstractActor {
+public class StreamManager extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     private Integer nr = 0;
 
     @Override
-    public AbstractActor.Receive createReceive() {
+    public Receive createReceive() {
         return receiveBuilder()
                 .match(Title.class, request -> {
                     TitleActor new_request = new TitleActor(request.title, getSender());

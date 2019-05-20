@@ -1,14 +1,15 @@
-package com.agh.library;
+package com.agh.library.Order;
 
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-import com.agh.helpers.Title;
-import com.agh.helpers.TitleActor;
+import com.agh.helpers.titles.Title;
+import com.agh.helpers.titles.TitleActor;
+import com.agh.library.Find.FindSupervisor;
 
-public class StreamManager extends AbstractActor {
+public class OrderManager extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     private Integer nr = 0;
 

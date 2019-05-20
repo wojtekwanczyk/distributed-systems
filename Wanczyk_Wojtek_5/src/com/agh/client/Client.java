@@ -3,9 +3,9 @@ package com.agh.client;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
-import com.agh.helpers.FindRequest;
-import com.agh.helpers.OrderRequest;
-import com.agh.helpers.StreamRequest;
+import com.agh.helpers.requests.FindRequest;
+import com.agh.helpers.requests.OrderRequest;
+import com.agh.helpers.requests.StreamRequest;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 

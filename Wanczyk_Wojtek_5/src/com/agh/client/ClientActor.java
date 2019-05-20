@@ -3,8 +3,13 @@ package com.agh.client;
 import akka.actor.AbstractActor;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-import com.agh.helpers.*;
-import com.agh.library.FindManager;
+import com.agh.helpers.other.Price;
+import com.agh.helpers.other.Response;
+import com.agh.helpers.requests.FindRequest;
+import com.agh.helpers.requests.OrderRequest;
+import com.agh.helpers.requests.StreamRequest;
+import com.agh.helpers.titles.Title;
+import com.agh.library.Find.FindManager;
 
 public class ClientActor extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);

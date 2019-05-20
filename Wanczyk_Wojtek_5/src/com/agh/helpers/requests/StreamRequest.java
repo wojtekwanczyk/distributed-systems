@@ -1,4 +1,4 @@
-package com.agh.helpers;
+package com.agh.helpers.requests;
 
 public class StreamRequest extends Request {
     public StreamRequest(String title) {

@@ -1,4 +1,4 @@
-package com.agh.helpers;
+package com.agh.helpers.titles;
 
 import java.io.Serializable;
 

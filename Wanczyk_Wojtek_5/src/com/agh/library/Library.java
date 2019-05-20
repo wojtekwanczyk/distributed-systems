@@ -3,6 +3,10 @@ package com.agh.library;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
+import com.agh.library.Find.FindManager;
+import com.agh.library.Order.OrderManager;
+import com.agh.library.Order.SaveOrderWorker;
+import com.agh.library.Stream.StreamManager;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
@@ -21,6 +25,7 @@ public class Library {
         final ActorRef findManager = system.actorOf(Props.create(FindManager.class), "findManager");
         final ActorRef orderManager = system.actorOf(Props.create(OrderManager.class), "orderManager");
         final ActorRef streamManager = system.actorOf(Props.create(StreamManager.class), "streamManager");
+        final ActorRef saveOrderWorker = system.actorOf(Props.create(SaveOrderWorker.class), "saveOrderWorker");
 
         // interaction
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));

@@ -1,21 +1,21 @@
-package com.agh.library;
+package com.agh.library.Order;
 
 import akka.actor.AbstractActor;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-import com.agh.helpers.Price;
-import com.agh.helpers.Response;
-import com.agh.helpers.TitleDatabase;
+import com.agh.helpers.other.Price;
+import com.agh.helpers.other.Response;
+import com.agh.helpers.titles.TitleDatabase;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 
-public class FindWorker extends AbstractActor {
+public class OrderWorker extends AbstractActor {
 
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
 
     @Override
-    public AbstractActor.Receive createReceive()  {
+    public Receive createReceive()  {
         return receiveBuilder()
                 .match(TitleDatabase.class, request -> {
                     BufferedReader reader = null;

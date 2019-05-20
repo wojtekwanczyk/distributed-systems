@@ -1,4 +1,4 @@
-package com.agh.helpers;
+package com.agh.helpers.other;
 
 import java.io.Serializable;
 
