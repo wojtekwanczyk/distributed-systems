@@ -41,7 +41,12 @@ public class ClientActor extends AbstractActor {
                     System.out.println("Price: " + price.price);
                 })
                 .match(Response.class, System.out::println)
-                .matchAny(o -> log.info("received unknown message"))
+                .match(String.class, System.out::println)
+                .matchAny(o -> {
+                    log.info("received unknown message");
+                    System.out.println(o.getClass());
+                    System.out.println(o);
+                })
                 .build();
     }
 
