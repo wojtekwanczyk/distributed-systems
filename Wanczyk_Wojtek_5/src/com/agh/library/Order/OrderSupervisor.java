@@ -70,8 +70,4 @@ public class OrderSupervisor extends AbstractActor {
         return "Worker" + nr.toString();
     }
 
-    //@Override
-    //public void preStart() throws Exception {
-    //context().actorOf(Props.create(LibraryActor.class), "libraryWorker");
-    //}
 }

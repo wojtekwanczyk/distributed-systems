@@ -29,9 +29,4 @@ public class FindManager extends AbstractActor {
         nr++;
         return "findSupervisor" + nr.toString();
     }
-
-    //@Override
-    //public void preStart() throws Exception {
-        //context().actorOf(Props.create(LibraryActor.class), "libraryWorker");
-    //}
 }

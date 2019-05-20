@@ -29,9 +29,4 @@ public class OrderManager extends AbstractActor {
         nr++;
         return "orderSupervisor" + nr.toString();
     }
-
-    //@Override
-    //public void preStart() throws Exception {
-        //context().actorOf(Props.create(LibraryActor.class), "libraryWorker");
-    //}
 }
