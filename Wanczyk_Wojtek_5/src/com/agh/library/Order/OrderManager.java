@@ -7,7 +7,6 @@ import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import com.agh.helpers.titles.Title;
 import com.agh.helpers.titles.TitleActor;
-import com.agh.library.Find.FindSupervisor;
 
 public class OrderManager extends AbstractActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
@@ -19,7 +18,7 @@ public class OrderManager extends AbstractActor {
                 .match(Title.class, request -> {
                     TitleActor new_request = new TitleActor(request.title, getSender());
                     String childName = getName();
-                    ActorRef child = context().actorOf(Props.create(FindSupervisor.class), childName);
+                    ActorRef child = context().actorOf(Props.create(OrderSupervisor.class), childName);
                     child.tell(new_request, getSelf());
                 })
                 .matchAny(o -> log.info("received unknown message"))
@@ -28,7 +27,7 @@ public class OrderManager extends AbstractActor {
 
     private String getName(){
         nr++;
-        return "findSupervisor" + nr.toString();
+        return "orderSupervisor" + nr.toString();
     }
 
     //@Override

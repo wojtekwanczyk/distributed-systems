@@ -3,45 +3,34 @@ package com.agh.library.Order;
 import akka.actor.AbstractActor;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-import com.agh.helpers.other.Price;
 import com.agh.helpers.other.Response;
-import com.agh.helpers.titles.TitleDatabase;
+import com.agh.helpers.titles.Title;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 
 public class SaveOrderWorker extends AbstractActor {
 
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
+    private final String orders = "data/orders.txt";
 
     @Override
     public Receive createReceive()  {
         return receiveBuilder()
-                .match(TitleDatabase.class, request -> {
-                    BufferedReader reader = null;
+                .match(Title.class, request -> {
+                    BufferedWriter writer = null;
                     try {
-                        reader = new BufferedReader(new FileReader(request.database));
+                        writer = new BufferedWriter(new FileWriter(orders, true));
+                        System.out.println("Saving order, title: " + request.title);
+                        String msg = request.title + "\n";
+                        writer.write(msg);
+                        writer.close();
+                        System.out.println("Saving order successful");
                     } catch (Exception e) {
-                        System.out.println("Database " + request.database + " not accessible");
+                        System.out.println("Unable to write to file  " + orders);
+                        getSender().tell(Response.SAVE_ERROR, getSelf());
                     }
-                    String line = null;
-                    while (reader != null && (line = reader.readLine()) != null) {
-                        if(line.startsWith(request.title)){
-                            System.out.println("Found: " + line);
-                            break;
-                        }
-                    }
-
-                    if(line != null){
-                        String[] lineSplit = line.split(";");
-                        Price price = new Price();
-                        price.price = Double.parseDouble(lineSplit[1]);
-                        getSender().tell(price, getSelf());
-                    } else {
-                        getSender().tell(Response.NOT_FOUND, getSelf());
-                    }
-
-                    getContext().stop(getSelf());
+                    getSender().tell(Response.SAVE_SUCCESS, getSelf());
                 })
                 .matchAny(o -> log.info("received unknown message"))
                 .build();

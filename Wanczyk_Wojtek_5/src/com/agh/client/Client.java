@@ -31,20 +31,23 @@ public class Client {
             if (line.equals("q")) {
                 break;
             }
-            if (line.startsWith("f")) {
-                String title = line.split(" ")[1];
+            if (line.startsWith("f ")) {
+                String[] line_split = line.split(" ", 2);
+                String title = line_split[1];
                 FindRequest request = new FindRequest(title);
                 client.tell(request, null);
                 continue;
             }
-            if (line.startsWith("o")) {
-                String title = line.split(" ")[1];
+            if (line.startsWith("o ")) {
+                String[] line_split = line.split(" ", 2);
+                String title = line_split[1];
                 OrderRequest request = new OrderRequest(title);
                 client.tell(request, null);
                 continue;
             }
-            if (line.startsWith("s")) {
-                String title = line.split(" ")[1];
+            if (line.startsWith("s ")) {
+                String[] line_split = line.split(" ", 2);
+                String title = line_split[1];
                 StreamRequest request = new StreamRequest(title);
                 client.tell(request, null);
                 continue;

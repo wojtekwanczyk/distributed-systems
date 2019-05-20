@@ -28,13 +28,13 @@ public class ClientActor extends AbstractActor {
                 .match(OrderRequest.class, request -> {
                     Title title = new Title(request.title);
                     getContext()
-                            .actorSelection("akka.tcp://library_system@127.0.0.1:3553/user/findManager")
+                            .actorSelection("akka.tcp://library_system@127.0.0.1:3553/user/orderManager")
                             .tell(title, getSelf());
                 })
                 .match(StreamRequest.class, request -> {
                     Title title = new Title(request.title);
                     getContext()
-                            .actorSelection("akka.tcp://library_system@127.0.0.1:3553/user/findManager")
+                            .actorSelection("akka.tcp://library_system@127.0.0.1:3553/user/streamManager")
                             .tell(title, getSelf());
                 })
                 .match(Price.class, price -> {
