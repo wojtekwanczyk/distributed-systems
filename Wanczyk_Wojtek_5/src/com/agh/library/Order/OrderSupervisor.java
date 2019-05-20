@@ -2,6 +2,7 @@ package com.agh.library.Order;
 
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
+import akka.actor.ActorSelection;
 import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
@@ -18,7 +19,8 @@ public class OrderSupervisor extends AbstractActor {
     private ActorRef actor;
     private Title title;
     private boolean found = false;
-    private ActorRef saver = context().actorOf(Props.create(SaveOrderWorker.class), "saveOrderWorker");
+    private ActorSelection saver = getContext()
+                    .actorSelection("akka.tcp://library_system@127.0.0.1:3553/user/saveOrderWorker");
 
     @Override
     public Receive createReceive() {
